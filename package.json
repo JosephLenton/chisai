@@ -26,7 +26,7 @@
     "clean": "yarn run clean:build",
     "clean:build": "rimraf ./lib/*",
     "test": "yarn run jest",
-    "deploy": "yarn run build && yarn publish --access public"
+    "deploy": "yarn run build && yarn run test && yarn publish --access public"
   },
   "dependencies": {},
   "peerDependencies": {
