@@ -18,64 +18,66 @@ export function buildStoreFactory<
       ...override,
     })
     const listener = newStoreListenerFunctions()
-
-    return {
-      ...buildCommitFunctions(storeState, commits, listener),
-      ...buildAccessorFunctions(storeState, accessors),
-      ...buildStoreCoreFunctions(storeState),
+    const newStore = {
+      ...newStoreCoreFunctions(storeState),
       ...listener,
-    }
+    } as Store<S, C, A>
+
+    appendCommitFunctions(newStore, storeState, commits, listener)
+    appendAccessorFunctions(newStore, storeState, accessors)
+
+    return newStore
   }
 }
 
-function buildCommitFunctions<
+function appendCommitFunctions<
     S,
-    C extends Commits<S, C>
+    C extends Commits<S, C>,
+    A extends Accessors<S, A> = {},
+    St = Store<S, C, A>,
 >(
+  newStore: St,
   storeState: StoreState<S>,
   commits: C|undefined,
-  listener: StoreListener,
-): StoreCommits<S, C> {
+  listener: StoreListener<St>,
+): void {
   if (!commits) {
-    return {} as StoreCommits<S, C>
+    return
   }
 
-  const newStore : any = {}
-
-  Object.keys(commits).map(key => {
-    newStore[key] = (...args: unknown[]) => {
+  const commitKeys = Object.keys(commits) as Array<keyof C>
+  commitKeys.map(key => {
+    (newStore as any)[key] = (...args: unknown[]) => {
       const r = commits[key as keyof C](storeState.getState(), ...args)
-      listener.update()
+      listener.update(newStore)
       return r
     }
   })
-
-  return newStore
 }
 
-function buildAccessorFunctions<
+function appendAccessorFunctions<
     S,
-    A extends Accessors<S, A>
+    C extends Commits<S, C>,
+    A extends Accessors<S, A>,
+    St = Store<S, C, A>,
 >(
+  newStore: St,
   storeState: StoreState<S>,
   commits: A|undefined,
-): StoreAccessors<S, A> {
+): void {
   if (!commits) {
-    return {} as StoreAccessors<S, A>
+    return
   }
 
-  const newStore : any = {}
-
-  Object.keys(commits).map(key => {
-    newStore[key] = (...args: unknown[]) => {
-      return commits[key as keyof A](storeState.getState(), ...args)
+  const commitKeys = Object.keys(commits) as Array<keyof A>
+  commitKeys.map(key => {
+    (newStore as any)[key] = (...args: unknown[]) => {
+      return commits[key](storeState.getState(), ...args)
     }
   })
-
-  return newStore
 }
 
-function buildStoreCoreFunctions<S>(
+function newStoreCoreFunctions<S>(
   storeState: StoreState<S>,
 ): StoreCoreFunctions<S> {
   return {
@@ -98,11 +100,15 @@ export type Store<
     S,
     C extends Commits<S, C>,
     A extends Accessors<S, A>,
+    St =
+      & StoreCommits<S, C>
+      & StoreAccessors<S, A>
+      & StoreCoreFunctions<S>
 > =
   & StoreCommits<S, C>
   & StoreAccessors<S, A>
   & StoreCoreFunctions<S>
-  & StoreListener
+  & StoreListener<St>
 
 export type StoreCommits<
     S,

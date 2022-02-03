@@ -1,7 +1,7 @@
 import { useReducer, useEffect, useState } from 'react'
 import { StoreListener } from './listener'
 
-export function useStore(stores : StoreListener[]) {
+export function useStore(stores : StoreListener<any>[]) {
   const forceUpdate = useReducer(() => ({}), {})[1] as () => void
   const [oldStores, setStores] = useState(stores)
   const [comp, _] = useState({

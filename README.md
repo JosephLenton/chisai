@@ -10,3 +10,5 @@ I wanted something ...
  * Straightforward
  * Small
  * Predictable
+
+I wanted to be able to have stores as an object. Allowing an array of stores. A store containing store. A store containing a map that holds stores, which hold stores. And so on.
