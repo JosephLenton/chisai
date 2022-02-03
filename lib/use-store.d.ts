@@ -1,2 +1,2 @@
-import { StoreListener } from './listener';
-export declare function useStore(stores: StoreListener[]): void;
+import { Listenable } from './listenable';
+export declare function useStore(stores: Listenable<any>[]): void;

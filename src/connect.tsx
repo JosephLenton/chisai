@@ -1,10 +1,12 @@
 import React from 'react'
+import { StoreListener } from 'store-listener';
 import { Listenable } from './listenable'
 
 type ListenerKeys<T> = { [k in keyof T]: T[k] extends Listenable|undefined ? k : never }[keyof T];
 
 interface InnerState<P> {
   lastStores: Record<ListenerKeys<P>, Listenable|undefined>
+  listener: StoreListener
 }
 
 export function connect<P>(
@@ -16,7 +18,10 @@ export function connect<P>(
       super( props )
 
       this.state = {
-        lastStores: getStores(props, storeNames)
+        lastStores: getStores(props, storeNames),
+        listener: {
+          onUpdate: () => this.forceUpdate(),
+        },
       }
     }
 
@@ -41,8 +46,8 @@ export function connect<P>(
         const stateStore = this.state.lastStores[storeName]
 
         if (propStore !== stateStore) {
-          stateStore?.forget(this)
-          propStore?.listen(this)
+          stateStore?.forget(this.state.listener)
+          propStore?.listen(this.state.listener)
 
           hasChange = true
         }
@@ -58,14 +63,14 @@ export function connect<P>(
     componentDidMount() {
       for (const storeName of storeNames) {
         const store = this.props[storeName] as any as Listenable|undefined
-        store?.listen(this)
+        store?.listen(this.state.listener)
       }
     }
 
     componentWillUnmount() {
       for (const storeName of storeNames) {
         const store = this.props[storeName] as any as Listenable|undefined
-        store?.forget(this)
+        store?.forget(this.state.listener)
       }
     }
 
