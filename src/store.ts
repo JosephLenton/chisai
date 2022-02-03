@@ -141,15 +141,11 @@ export type Store<
     S,
     C extends Commits<S, C>,
     A extends Accessors<S, A>,
-    St =
-      & StoreCommits<S, C>
-      & StoreAccessors<S, A>
-      & StoreCoreFunctions<S>
 > =
   & StoreCommits<S, C>
   & StoreAccessors<S, A>
   & StoreCoreFunctions<S>
-  & Listenable<St>
+  & Listenable<Store<S, C, A>>
 
 export type StoreCommits<
     S,

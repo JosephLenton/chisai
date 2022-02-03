@@ -1,9 +1,10 @@
-import { newExampleStore } from './store.example'
+import { ExampleStore, newExampleStore } from './store.example'
 
 describe('listen', () => {
-  it('listening to a store should not be immediately called', testNoImmediateCallOnListen)
-  it('listening to a store should update when a commit is called', testListenForCommit)
-  it('listening to a store should give you the store with access to it', testListenWithStoreGiven)
+  it('should not call onUpdate immediately when listening to a store', testNoImmediateCallOnListen)
+  it(`should call onUpdate when a store's commits are called`, testListenForCommit)
+  it('should compile with listener types', testListenerTypesCompile)
+  it('should provide store object in onUpdate', testListenWithStoreGiven)
 
   describe('onListen', () => {
     it('should call onListen when the store is first listened to', testOnListenIsCalled)
@@ -11,12 +12,12 @@ describe('listen', () => {
   })
 
   describe('errors', () => {
-    it('listening to a store multiple times should raise an error', testMultipleListensCauseError)
+    it('should raise an error when listening to a store multiple times', testMultipleListensCauseError)
   })
 })
 
 describe('forget', () => {
-  it('forgetting a store should stop it receiving updates', testForgetNoUpdate)
+  it('should stop giving updates when a store forgets a listener', testForgetNoUpdate)
 
   describe('onForget', () => {
     it('should call onForget when the store forgets listener', testOnForgetIsCalled)
@@ -24,8 +25,8 @@ describe('forget', () => {
   })
 
   describe('errors', () => {
-    it('forgetting a listener never seen before should raise an error', testForgettingUnknownListener)
-    it('forgetting a store multiple times should raise an error', testMultipleForgetsCauseError)
+    it('should raise an error when forgetting a listener never seen before', testForgettingUnknownListener)
+    it('should raise an error when forgetting a store multiple times', testMultipleForgetsCauseError)
   })
 })
 
@@ -47,8 +48,25 @@ async function testListenForCommit() {
   mockStore.listen({
     onUpdate: onCall,
   })
-
   mockStore.setNumber(123)
+
+  expect(onCall).toBeCalled()
+}
+
+async function testListenerTypesCompile() {
+  const mockStore = newExampleStore()
+  const onCall = jest.fn()
+
+  const listener = {
+    onUpdate: (store: ExampleStore) => {
+      const currentNumber = store.getNumber()
+      onCall(currentNumber)
+    },
+  }
+
+  mockStore.listen(listener)
+  mockStore.setNumber(123)
+
   expect(onCall).toBeCalled()
 }
 
