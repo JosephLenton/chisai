@@ -1,4 +1,4 @@
-import { StoreListener } from "./store-listener"
+import { StoreListener } from './store-listener'
 
 export interface Listenable<S = unknown> {
   listen: (component: StoreListener<S>) => void

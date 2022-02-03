@@ -1,4 +1,4 @@
-import { buildStoreFactory } from "./store"
+import { buildStoreFactory } from './store'
 
 export interface ExampleState {
   exampleNumber: number,

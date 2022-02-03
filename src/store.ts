@@ -1,7 +1,7 @@
 import { Listenable } from './listenable'
 import { OmitFirstArg } from './util/types'
 import { StoreState } from './inner/store-state'
-import { StoreListener } from 'store-listener'
+import { StoreListener } from './store-listener'
 
 export function buildStoreFactory<
     S,

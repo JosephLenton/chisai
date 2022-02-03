@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
-import { StoreListener } from 'store-listener'
+import { StoreListener } from './store-listener'
 import { Listenable } from './listenable'
 
 export function useStore(stores : Listenable<any>[]) {
