@@ -1,12 +1,10 @@
-import { useReducer, useEffect, useState } from 'react'
-import { StoreListener } from './listener'
+import { useEffect, useState, useCallback } from 'react'
+import { StoreListener } from 'store-listener'
+import { Listenable } from './listenable'
 
-export function useStore(stores : StoreListener<any>[]) {
-  const forceUpdate = useReducer(() => ({}), {})[1] as () => void
+export function useStore(stores : Listenable<any>[]) {
+  const listener = useComponentListener()
   const [oldStores, setStores] = useState(stores)
-  const [comp, _] = useState({
-    forceUpdate,
-  })
 
   useEffect(() => {
     let hasChange = false
@@ -16,8 +14,8 @@ export function useStore(stores : StoreListener<any>[]) {
       const oldStore = oldStores[i]
 
       if (newStore !== oldStore) {
-        oldStore.forget(comp)
-        newStore.listen(comp)
+        oldStore.forget(listener)
+        newStore.listen(listener)
         hasChange = true
       }
     }
@@ -29,13 +27,23 @@ export function useStore(stores : StoreListener<any>[]) {
 
   useEffect(() => {
     stores.forEach(store => {
-      store.listen(comp)
+      store.listen(listener)
     })
 
     return () => {
       stores.forEach(store => {
-        store.forget(comp)
+        store.forget(listener)
       })
     }
   }, [])
+}
+
+function useComponentListener(): StoreListener {
+  const [, updateState] = useState<{}>()
+  const forceUpdate = useCallback(() => updateState({}), [])
+  const [listener] = useState({
+    onUpdate: forceUpdate,
+  })
+
+  return listener
 }

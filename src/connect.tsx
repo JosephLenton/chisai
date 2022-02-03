@@ -1,10 +1,10 @@
 import React from 'react'
-import { StoreListener } from './listener'
+import { Listenable } from './listenable'
 
-type ListenerKeys<T> = { [k in keyof T]: T[k] extends StoreListener|undefined ? k : never }[keyof T];
+type ListenerKeys<T> = { [k in keyof T]: T[k] extends Listenable|undefined ? k : never }[keyof T];
 
 interface InnerState<P> {
-  lastStores: Record<ListenerKeys<P>, StoreListener|undefined>
+  lastStores: Record<ListenerKeys<P>, Listenable|undefined>
 }
 
 export function connect<P>(
@@ -22,7 +22,7 @@ export function connect<P>(
 
     static getDerivedStateFromProps(props:P, state: InnerState<P>) {
       for (const storeName of storeNames) {
-        const propStore = props[storeName] as any as StoreListener|undefined
+        const propStore = props[storeName] as any as Listenable|undefined
         const stateStore = state.lastStores[storeName]
 
         if (propStore !== stateStore) {
@@ -37,7 +37,7 @@ export function connect<P>(
       let hasChange = false
 
       for (const storeName of storeNames) {
-        const propStore = this.props[storeName] as any as StoreListener|undefined
+        const propStore = this.props[storeName] as any as Listenable|undefined
         const stateStore = this.state.lastStores[storeName]
 
         if (propStore !== stateStore) {
@@ -57,14 +57,14 @@ export function connect<P>(
 
     componentDidMount() {
       for (const storeName of storeNames) {
-        const store = this.props[storeName] as any as StoreListener|undefined
+        const store = this.props[storeName] as any as Listenable|undefined
         store?.listen(this)
       }
     }
 
     componentWillUnmount() {
       for (const storeName of storeNames) {
-        const store = this.props[storeName] as any as StoreListener|undefined
+        const store = this.props[storeName] as any as Listenable|undefined
         store?.forget(this)
       }
     }
@@ -80,11 +80,11 @@ export function connect<P>(
 function getStores<P>(
   props: P,
   storeNames: ListenerKeys<P>[],
-): Record<ListenerKeys<P>, StoreListener|undefined> {
-  const found: Record<ListenerKeys<P>, StoreListener|undefined> = {} as any
+): Record<ListenerKeys<P>, Listenable|undefined> {
+  const found: Record<ListenerKeys<P>, Listenable|undefined> = {} as any
 
   for (const storeName of storeNames) {
-    found[storeName] = (props[storeName] as any as StoreListener|undefined)
+    found[storeName] = (props[storeName] as any as Listenable|undefined)
   }
 
   return found

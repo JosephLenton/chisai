@@ -1,6 +1,7 @@
-import { newStoreListenerFunctions, StoreListener } from './listener'
+import { Listenable } from './listenable'
 import { OmitFirstArg } from './util/types'
 import { StoreState } from './inner/store-state'
+import { StoreListener } from 'store-listener'
 
 export function buildStoreFactory<
     S,
@@ -17,13 +18,15 @@ export function buildStoreFactory<
       ...state,
       ...override,
     })
-    const listener = newStoreListenerFunctions()
+
     const newStore = {
       ...newStoreCoreFunctions(storeState),
-      ...listener,
     } as Store<S, C, A>
 
-    appendCommitFunctions(newStore, storeState, commits, listener)
+    const components : StoreListener<Store<S, C, A>>[] = []
+    const update = newUpdateStoreFunction(newStore, components)
+    appendListenableFunctions(newStore, components, update)
+    appendCommitFunctions(newStore, storeState, commits, update)
     appendAccessorFunctions(newStore, storeState, accessors)
 
     return newStore
@@ -39,7 +42,7 @@ function appendCommitFunctions<
   newStore: St,
   storeState: StoreState<S>,
   commits: C|undefined,
-  listener: StoreListener<St>,
+  update: () => void,
 ): void {
   if (!commits) {
     return
@@ -49,7 +52,7 @@ function appendCommitFunctions<
   commitKeys.map(key => {
     (newStore as any)[key] = (...args: unknown[]) => {
       const r = commits[key as keyof C](storeState.getState(), ...args)
-      listener.update(newStore)
+      update()
       return r
     }
   })
@@ -75,6 +78,44 @@ function appendAccessorFunctions<
       return commits[key](storeState.getState(), ...args)
     }
   })
+}
+
+function appendListenableFunctions<S = unknown>(
+    newStore: S,
+    components : StoreListener<S>[],
+    update: () => void,
+): void {
+  (newStore as any).listen = (component : StoreListener<S>) => {
+    for (let i = 0; i < components.length; i++) {
+      if (components[i] === component) {
+        throw new Error('already listening to component, listen has been called a second time')
+      }
+    }
+
+    components.push(component)
+    component.onListen?.(newStore)
+  }
+
+  (newStore as any).forget = (component : StoreListener<S>) => {
+    const index = components.indexOf(component)
+    if ( index === -1 ) {
+      throw new Error('component not found to unlisten')
+    }
+
+    components.splice(index, 1)
+    component.onForget?.(newStore)
+  }
+
+  (newStore as any).update = update
+}
+
+function newUpdateStoreFunction<S = unknown>(
+  newStore: S,
+  components: StoreListener<S>[],
+): () => void {
+  return () => {
+    components.forEach(c => c.onUpdate(newStore))
+  }
 }
 
 function newStoreCoreFunctions<S>(
@@ -108,7 +149,7 @@ export type Store<
   & StoreCommits<S, C>
   & StoreAccessors<S, A>
   & StoreCoreFunctions<S>
-  & StoreListener<St>
+  & Listenable<St>
 
 export type StoreCommits<
     S,
