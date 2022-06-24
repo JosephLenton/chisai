@@ -12,7 +12,7 @@ export function buildStoreFactory<
   commits ?: C,
   accessors ?: A,
 ) : StoreFactory<S, C, A> {
-  return (override = {}) => {
+  const storeConstructor = (override = {}) => {
     const state = initialStateBuilder()
     const storeState = new StoreState({
       ...state,
@@ -20,7 +20,7 @@ export function buildStoreFactory<
     })
 
     const newStore = {
-      ...newStoreCoreFunctions(storeState),
+      ...newStoreCoreFunctions(storeState, storeConstructor),
     } as Store<S, C, A>
 
     const components : StoreListener<Store<S, C, A>>[] = []
@@ -31,6 +31,8 @@ export function buildStoreFactory<
 
     return newStore
   }
+
+  return storeConstructor
 }
 
 function appendCommitFunctions<
@@ -118,15 +120,26 @@ function newUpdateStoreFunction<S = unknown>(
   }
 }
 
-function newStoreCoreFunctions<S>(
+function newStoreCoreFunctions<
+    S,
+    C extends Commits<S, C>,
+    A extends Accessors<S, A>,
+>(
   storeState: StoreState<S>,
-): StoreCoreFunctions<S> {
+  storeConstructor: (override: Partial<S>) => Store<S, C, A>,
+): StoreCoreFunctions<S, C, A> {
   return {
     setState: (override: Partial<S>) => {
       storeState.setState(override)
     },
     getState: () => {
       return storeState.getState()
+    },
+    clone: (override: Partial<S> = {}) => {
+      return storeConstructor({
+        ...storeState.getState(),
+        ...override,
+      })
     },
   }
 }
@@ -144,7 +157,7 @@ export type Store<
 > =
   & StoreCommits<S, C>
   & StoreAccessors<S, A>
-  & StoreCoreFunctions<S>
+  & StoreCoreFunctions<S, C, A>
   & Listenable<Store<S, C, A>>
 
 export type StoreCommits<
@@ -171,7 +184,12 @@ export type Accessors<S, T> = {
 }
 export type AccessorFn<S> = (state: S, ...args: any) => any|never
 
-export type StoreCoreFunctions<S> = {
+export type StoreCoreFunctions<
+  S,
+  C extends Commits<S, C>,
+  A extends Accessors<S, A>,
+> = {
   getState: () => S
   setState: (override: Partial<S>) => void
+  clone: (override?: Partial<S>) => Store<S, C, A>
 }
