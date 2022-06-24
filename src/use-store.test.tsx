@@ -1,5 +1,5 @@
 import React from 'react'
-import { render, waitFor } from '@testing-library/react'
+import { render, act } from '@testing-library/react'
 import { useStore } from './use-store'
 import { newExampleStore } from './store.example'
 
@@ -12,7 +12,7 @@ async function testRegisterComponentOnce() {
     exampleNumber: 456,
   })
 
-  const ExampleComponent : React.VoidFunctionComponent = () => {
+  const ExampleComponent : React.FunctionComponent = () => {
     useStore([mockStore])
     return <div>{mockStore.getNumber()}</div>
   }
@@ -20,38 +20,41 @@ async function testRegisterComponentOnce() {
   const component = render(<ExampleComponent />)
   component.rerender(<ExampleComponent />)
 
-  expect(await component.getByText("456")).toBeInTheDocument()
+  expect(component.getByText("456")).toBeInTheDocument()
 }
 
 async function testStoreUpdate() {
   const mockStore = newExampleStore()
 
-  const ExampleComponent : React.VoidFunctionComponent = () => {
+  const ExampleComponent : React.FunctionComponent = () => {
     useStore([mockStore])
     return <div>{mockStore.getNumber()}</div>
   }
 
   const component = render(<ExampleComponent />)
 
-  expect(await component.getByText("0")).toBeInTheDocument()
-  await waitFor(() => mockStore.setNumber(123))
-  expect(await component.getByText("123")).toBeInTheDocument()
+  expect(component.getByText("0")).toBeInTheDocument()
+
+  await act(() => mockStore.setNumber(123))
+  expect(component.getByText("123")).toBeInTheDocument()
 }
 
 async function testMultipleStoreUpdates() {
   const mockStore = newExampleStore()
 
-  const ExampleComponent : React.VoidFunctionComponent = () => {
+  const ExampleComponent : React.FunctionComponent = () => {
     useStore([mockStore])
     return <div>{mockStore.getNumber()}</div>
   }
 
   const component = render(<ExampleComponent />)
 
-  await waitFor(() => mockStore.setNumber(123))
-  expect(await component.getByText("123")).toBeInTheDocument()
-  await waitFor(() => mockStore.setNumber(666))
-  expect(await component.getByText("666")).toBeInTheDocument()
-  await waitFor(() => mockStore.setNumber(999))
-  expect(await component.getByText("999")).toBeInTheDocument()
+  await act(() => mockStore.setNumber(123))
+  expect(component.getByText("123")).toBeInTheDocument()
+
+  await act(() => mockStore.setNumber(666))
+  expect(component.getByText("666")).toBeInTheDocument()
+
+  await act(() => mockStore.setNumber(999))
+  expect(component.getByText("999")).toBeInTheDocument()
 }
