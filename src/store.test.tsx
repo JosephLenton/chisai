@@ -1,4 +1,4 @@
-import { newExampleStore } from './store.example'
+import { newExampleNumberStore } from './example-stores'
 
 describe('clone', () => {
   it('should return a new store of the same type', testCloneReturnsStore)
@@ -6,7 +6,7 @@ describe('clone', () => {
 })
 
 async function testCloneReturnsStore() {
-  const originalStore = newExampleStore({
+  const originalStore = newExampleNumberStore({
     exampleNumber: 456,
   })
 
@@ -16,7 +16,7 @@ async function testCloneReturnsStore() {
 }
 
 async function testCloneWithOverridedState() {
-  const originalStore = newExampleStore({
+  const originalStore = newExampleNumberStore({
     exampleNumber: 456,
   })
 

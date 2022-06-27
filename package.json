@@ -1,6 +1,6 @@
 {
   "name": "chisai",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "A library for building micro stores",
   "repository": {
     "type": "git",
@@ -26,6 +26,7 @@
     "clean": "yarn run clean:build",
     "clean:build": "rimraf ./lib/*",
     "test": "yarn run jest",
+    "test:watch": "yarn run jest --watch",
     "deploy": "yarn run build && yarn run test && yarn publish --access public"
   },
   "dependencies": {},

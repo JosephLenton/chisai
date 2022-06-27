@@ -1,4 +1,4 @@
-import { ExampleStore, newExampleStore } from './store.example'
+import { ExampleNumberStore, newExampleNumberStore } from './example-stores'
 
 describe('listen', () => {
   it('should not call onUpdate immediately when listening to a store', testNoImmediateCallOnListen)
@@ -31,7 +31,7 @@ describe('forget', () => {
 })
 
 async function testNoImmediateCallOnListen() {
-  const mockStore = newExampleStore()
+  const mockStore = newExampleNumberStore()
   const onCall = jest.fn()
 
   mockStore.listen({
@@ -42,7 +42,7 @@ async function testNoImmediateCallOnListen() {
 }
 
 async function testListenForCommit() {
-  const mockStore = newExampleStore()
+  const mockStore = newExampleNumberStore()
   const onCall = jest.fn()
 
   mockStore.listen({
@@ -54,11 +54,11 @@ async function testListenForCommit() {
 }
 
 async function testListenerTypesCompile() {
-  const mockStore = newExampleStore()
+  const mockStore = newExampleNumberStore()
   const onCall = jest.fn()
 
   const listener = {
-    onUpdate: (store: ExampleStore) => {
+    onUpdate: (store: ExampleNumberStore) => {
       const currentNumber = store.getNumber()
       onCall(currentNumber)
     },
@@ -71,7 +71,7 @@ async function testListenerTypesCompile() {
 }
 
 async function testListenWithStoreGiven() {
-  const mockStore = newExampleStore()
+  const mockStore = newExampleNumberStore()
   const onCall = jest.fn()
 
   mockStore.listen({
@@ -86,7 +86,7 @@ async function testListenWithStoreGiven() {
 }
 
 async function testOnListenIsCalled() {
-  const mockStore = newExampleStore()
+  const mockStore = newExampleNumberStore()
   const listener = {
     onListen: jest.fn(),
     onUpdate: () => {},
@@ -97,7 +97,7 @@ async function testOnListenIsCalled() {
 }
 
 async function testOnListenNotCalledAfterUpdate() {
-  const mockStore = newExampleStore()
+  const mockStore = newExampleNumberStore()
   const listener = {
     onListen: jest.fn(),
     onUpdate: () => {},
@@ -110,7 +110,7 @@ async function testOnListenNotCalledAfterUpdate() {
 }
 
 async function testMultipleListensCauseError() {
-  const mockStore = newExampleStore()
+  const mockStore = newExampleNumberStore()
   const listener = {
     onUpdate: () => {},
   }
@@ -123,7 +123,7 @@ async function testMultipleListensCauseError() {
 }
 
 async function testForgetNoUpdate() {
-  const mockStore = newExampleStore()
+  const mockStore = newExampleNumberStore()
   const listener = {
     onUpdate: jest.fn(),
   }
@@ -136,7 +136,7 @@ async function testForgetNoUpdate() {
 }
 
 async function testOnForgetIsCalled() {
-  const mockStore = newExampleStore()
+  const mockStore = newExampleNumberStore()
   const listener = {
     onForget: jest.fn(),
     onUpdate: () => {},
@@ -149,7 +149,7 @@ async function testOnForgetIsCalled() {
 }
 
 async function testOnForgetIsNeverCalledByUpdate() {
-  const mockStore = newExampleStore()
+  const mockStore = newExampleNumberStore()
   const listener = {
     onForget: jest.fn(),
     onUpdate: () => {},
@@ -163,7 +163,7 @@ async function testOnForgetIsNeverCalledByUpdate() {
 }
 
 async function testForgettingUnknownListener() {
-  const mockStore = newExampleStore()
+  const mockStore = newExampleNumberStore()
   const listener = {
     onUpdate: () => {},
   }
@@ -174,7 +174,7 @@ async function testForgettingUnknownListener() {
 }
 
 async function testMultipleForgetsCauseError() {
-  const mockStore = newExampleStore()
+  const mockStore = newExampleNumberStore()
   const listener = {
     onUpdate: () => {},
   }

@@ -88,10 +88,9 @@ function appendListenableFunctions<S = unknown>(
     update: () => void,
 ): void {
   (newStore as any).listen = (component : StoreListener<S>) => {
-    for (let i = 0; i < components.length; i++) {
-      if (components[i] === component) {
-        throw new Error('already listening to component, listen has been called a second time')
-      }
+    const hasComponent = components.includes(component)
+    if (hasComponent) {
+      throw new Error('already listening to component, listen has been called a second time')
     }
 
     components.push(component)
@@ -101,7 +100,7 @@ function appendListenableFunctions<S = unknown>(
   (newStore as any).forget = (component : StoreListener<S>) => {
     const index = components.indexOf(component)
     if ( index === -1 ) {
-      throw new Error('component not found to unlisten')
+      throw new Error('Component not found to unlisten')
     }
 
     components.splice(index, 1)
